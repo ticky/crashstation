@@ -1,3 +1,12 @@
+#!/usr/bin/env ruby
+
+# CrashStation! (Ruby portion) by Jessica Stokes
+#
+# Launches a PocketStation game in MAME, capturing 30 seconds of output as a gif
+#
+# Direct usage:
+# `ruby crashstation.rb`
+
 require 'rmagick'
 require 'date'
 
@@ -12,8 +21,8 @@ def run_emulator
         -sound none \
         -seconds_to_run 60 \
         pockstat \
-        -autoboot_script ~/Repositories/crashstation/crashstation.lua \
-        -cart ~/Documents/PlayStation/PocketStation/Backups/Crash\\ Bandicoot\\ 3\\ \\(JP\\)/Crash\\ Bandicoot\\ 3\\ \\(JP\\).gme
+        -autoboot_script #{__dir__}/crashstation.lua \
+        -cart #{__dir__}/crash.gme
   ]
 end
 
