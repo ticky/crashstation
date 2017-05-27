@@ -10,10 +10,8 @@
 require 'rmagick'
 require 'date'
 
-def run_emulator
+def run_emulator(utc_offset: 36000)
   puts 'Running emulator...'
-
-  utc_offset = 36000
 
   %x[
     TZ=LOL#{(-utc_offset / 3600).round.to_s} \
@@ -35,13 +33,12 @@ def process_video_data(video_data)
 
   generated_gif = Magick::ImageList.new
 
-  until raw_lines.empty? do
+  until raw_lines.length < LINES_PER_FRAME do
     frame_data = raw_lines.shift LINES_PER_FRAME
 
-    delay = frame_data.shift.to_f
-
-    frame_data.shift # remove the separator line
     frame_data.pop # remove the other separator line
+    delay = frame_data.pop.to_f
+    frame_data.pop # remove the separator line
 
     frame_pixels = []
 

@@ -168,7 +168,10 @@ function on_frame_done()
     new_frame = read_display()
 
     if new_frame ~= LAST_FRAME then
-      print(((frame_number - LAST_FRAME_NUMBER) / refresh_rate) .. '\n\n' .. new_frame)
+      if LAST_FRAME then
+        print(((frame_number - LAST_FRAME_NUMBER) / refresh_rate) .. '\n')
+      end
+      print(new_frame)
       --print('(frame delay: ' .. ((frame_number - LAST_FRAME_NUMBER) / refresh_rate) .. 's)')
       LAST_FRAME = new_frame
       LAST_FRAME_NUMBER = frame_number
