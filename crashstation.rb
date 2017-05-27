@@ -10,77 +10,97 @@
 require 'rmagick'
 require 'date'
 
-LINES_PER_FRAME = 35
+module CrashStation
+  extend self
 
-def process_video_data(video_data)
-  raw_lines = video_data.lines
+  def make_gif_cli(
+    game_filename: "#{__dir__}/crash.gme",
+    gif_filename: make_filename,
+    utc_offset: rand(-24..24) * 3600
+  )
+    puts 'Running mame...'
+    video_data = run_emulator(game_filename, utc_offset: utc_offset)
 
-  num_frames = raw_lines.length / LINES_PER_FRAME
+    puts 'Processing video data...'
+    gif = process_video_data(video_data)
 
-  puts "Processing ~#{num_frames} frames of video data..."
-  puts "(#{raw_lines.length} lines supplied)"
+    puts 'Writing gif...'
+    gif.write gif_filename
 
-  generated_gif = Magick::ImageList.new do
-    self.background_color = 'transparent'
+    puts "Wrote GIF to \"#{gif_filename}\"."
+    puts 'Done!'
   end
 
-  until raw_lines.length < LINES_PER_FRAME
-    frame_data = raw_lines.shift LINES_PER_FRAME
+  def make_gif(
+    game_filename: "#{__dir__}/crash.gme",
+    utc_offset: rand(-24..24) * 3600
+  )
+    process_video_data(run_emulator(game_filename, utc_offset: utc_offset))
+  end
 
-    frame_data.pop # remove the other separator line
-    delay = frame_data.pop.to_f
-    frame_data.pop # remove the separator line
+  SCREEN_SIZE = 32
+  LINES_PER_FRAME = SCREEN_SIZE + 3
 
-    frame_pixels = process_frame_pixels(frame_data)
+  def process_video_data(video_data)
+    raw_lines = video_data.lines
 
-    generated_gif.new_image(32, 32)
-    generated_gif.last.tap do |new_frame|
-      new_frame.store_pixels(0, 0, 32, 32, frame_pixels)
-      new_frame.delay = delay * new_frame.ticks_per_second
-      new_frame.resize! 192, 192, Magick::PointFilter
+    Magick::ImageList.new.tap do |gif|
+      until raw_lines.length < LINES_PER_FRAME
+        add_frame_to gif, raw_lines.shift(LINES_PER_FRAME)
+      end
     end
   end
 
-  filename = "crashstation-#{DateTime.now.strftime '%FT%H%M%S'}.gif"
+  def add_frame_to(gif, frame)
+    frame.pop # remove the separator line
+    delay = frame.pop.to_f
+    frame.pop # remove the other separator line
 
-  generated_gif.write filename
-
-  puts "Wrote GIF to \"#{filename}\"."
-  puts 'Done!'
-end
-
-def process_frame_pixels(frame_data)
-  frame_pixels = []
-
-  frame_data.each do |scanline|
-    frame_pixels.concat(
-      scanline
-        .to_i
-        .to_s(2)
-        .rjust(32, '0')
-        .split('')
-        .reverse
-        .map! do |pixel|
-          Magick::Pixel.from_color(pixel == '1' ? 'black' : 'white')
-        end
-    )
+    gif.new_image(SCREEN_SIZE, SCREEN_SIZE)
+    gif.last.tap do |gif_frame|
+      gif_frame.store_pixels(0, 0, SCREEN_SIZE, SCREEN_SIZE, raw_frame_to_pixels(frame))
+      gif_frame.delay = delay * gif_frame.ticks_per_second
+      gif_frame.resize! SCREEN_SIZE * 6, SCREEN_SIZE * 6, Magick::PointFilter
+    end
   end
 
-  frame_pixels
+  def raw_frame_to_pixels(frame)
+    [].tap do |frame_pixels|
+      frame.each do |scanline|
+        frame_pixels.concat process_scanline(scanline)
+      end
+    end
+  end
+
+  def process_scanline(scanline)
+    scanline
+      .to_i
+      .to_s(2)
+      .rjust(32, '0')
+      .split('')
+      .reverse
+      .map! do |pixel|
+        Magick::Pixel.from_color(pixel == '1' ? 'black' : 'white')
+      end
+  end
+
+  def run_emulator(game_file, utc_offset: 36_000)
+    timezone = (-utc_offset / 3600).round.to_s
+
+    %x[
+      TZ=LOL#{timezone} \
+        mame \
+          -sound none \
+          -seconds_to_run 60 \
+          pockstat \
+          -autoboot_script #{__dir__}/crashstation.lua \
+          -cart #{game_file}
+    ]
+  end
+
+  def make_filename
+    "crashstation-#{DateTime.now.strftime '%FT%H%M%S'}.gif"
+  end
 end
 
-def run_emulator(utc_offset = 36_000)
-  puts 'Running emulator...'
-
-  %x[
-    TZ=LOL#{(-utc_offset / 3600).round.to_s} \
-      mame \
-        -sound none \
-        -seconds_to_run 60 \
-        pockstat \
-        -autoboot_script #{__dir__}/crashstation.lua \
-        -cart #{__dir__}/crash.gme
-  ]
-end
-
-process_video_data(run_emulator(rand(-24..24) * 3600))
+CrashStation.make_gif_cli
