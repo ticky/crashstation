@@ -58,7 +58,8 @@ module CrashStation
 
     gif.new_image(SCREEN_SIZE, SCREEN_SIZE)
     gif.last.tap do |gif_frame|
-      gif_frame.store_pixels(0, 0, SCREEN_SIZE, SCREEN_SIZE, raw_frame_to_pixels(frame))
+      pixels = raw_frame_to_pixels frame
+      gif_frame.store_pixels 0, 0, SCREEN_SIZE, SCREEN_SIZE, pixels
       gif_frame.delay = delay * gif_frame.ticks_per_second
       gif_frame.resize! SCREEN_SIZE * 6, SCREEN_SIZE * 6, Magick::PointFilter
     end
