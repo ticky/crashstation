@@ -10,7 +10,7 @@
 require 'rmagick'
 require 'date'
 
-def run_emulator(utc_offset: 36000)
+def run_emulator(utc_offset=36000)
   puts 'Running emulator...'
 
   %x[
@@ -70,4 +70,4 @@ def process_video_data(video_data)
   puts 'Done!'
 end
 
-process_video_data(run_emulator)
+process_video_data(run_emulator(rand(-24..24) * 3600))
