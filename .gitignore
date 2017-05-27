@@ -1,2 +1,9 @@
+# MAME folders
+history
+cfg
+
+# memcard images
 *.gme
+
+# output gifs lol
 *.gif
