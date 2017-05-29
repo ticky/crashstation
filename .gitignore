@@ -1,6 +1,7 @@
 # MAME folders
-history
 cfg
+history
+snap
 
 # memcard images
 *.gme
