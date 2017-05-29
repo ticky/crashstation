@@ -105,4 +105,4 @@ module CrashStation
   end
 end
 
-CrashStation.make_gif_cli
+CrashStation.make_gif_cli if __FILE__ == $PROGRAM_NAME
