@@ -84,7 +84,7 @@ LAST_FRAME_NUMBER = APP_LAUNCHED_FRAME - 1
 GIF_TIME = 30
 
 -- let's run this at superspeed!!!
-video.throttle_rate = 4
+video.throttle_rate = 16
 
 function read_display()
   buffer = ""

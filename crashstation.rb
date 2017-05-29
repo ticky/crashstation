@@ -91,6 +91,7 @@ module CrashStation
     %x[
       TZ=LOL#{timezone} \
         mame \
+          -video none \
           -sound none \
           -seconds_to_run 60 \
           pockstat \
