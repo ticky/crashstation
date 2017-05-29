@@ -30,17 +30,17 @@ class CrashStationBot < Ebooks::Bot
     self.delay_range = 0..180
   end
 
-  def make_gif(utc_offset:)
-    gif = CrashStation.make_gif(utc_offset: utc_offset)
+  def make_gif(**args)
+    gif = CrashStation.make_gif(**args)
     file = Tempfile.new('image')
     gif.write("gif:#{file.path}")
     file
   end
 
-  def make_public_tweet(utc_offset:)
+  def make_public_tweet(**args)
     tweet(
       LYRICS.sample,
-      media_ids: twitter.upload(make_gif(utc_offset: utc_offset)).to_s
+      media_ids: twitter.upload(make_gif(**args)).to_s
     )
   end
 

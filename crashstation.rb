@@ -16,10 +16,10 @@ module CrashStation
   def make_gif_cli(
     game_filename: "#{__dir__}/crash.gme",
     gif_filename: make_filename,
-    utc_offset: rand(-24..24) * 3600
+    **args
   )
     puts 'Running mame...'
-    video_data = run_emulator(game_filename, utc_offset: utc_offset)
+    video_data = run_emulator(game_filename, **args)
 
     puts 'Processing video data...'
     gif = process_video_data(video_data)
@@ -33,9 +33,9 @@ module CrashStation
 
   def make_gif(
     game_filename: "#{__dir__}/crash.gme",
-    utc_offset: rand(-24..24) * 3600
+    **args
   )
-    process_video_data(run_emulator(game_filename, utc_offset: utc_offset))
+    process_video_data(run_emulator(game_filename, **args))
   end
 
   SCREEN_SIZE = 32
@@ -85,7 +85,7 @@ module CrashStation
       end
   end
 
-  def run_emulator(game_file, utc_offset: 36_000)
+  def run_emulator(game_file, utc_offset: rand(-24..24) * 3600)
     timezone = (-utc_offset / 3600).round.to_s
 
     %x[
